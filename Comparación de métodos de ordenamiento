@@ -1,0 +1,397 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
+#include <algorithm>
+
+using namespace std;
+using namespace chrono;
+
+class SistemaOrdenamiento {
+private:
+    vector<int> numeros;
+    vector<int> numerosOriginales;
+    vector<pair<string, double>> tiemposEjecucion;
+    
+public:
+    SistemaOrdenamiento() {
+        srand(time(0));
+    }
+    
+    void generarNumeros() {
+        int cantidad;
+        cout << "\nIngrese la cantidad de números a generar: ";
+        cin >> cantidad;
+        
+        numeros.clear();
+        numerosOriginales.clear();
+        
+        for (int i = 0; i < cantidad; i++) {
+            int num = rand() % 10000 + 1; // Números entre 1 y 10000
+            numeros.push_back(num);
+        }
+        
+        numerosOriginales = numeros;
+        tiemposEjecucion.clear();
+        cout << "\nSe generaron " << cantidad << " números aleatorios.\n";
+    }
+    
+    void mostrarNumeros() {
+        if (numeros.empty()) {
+            cout << "\nNo hay números generados. Primero use la opción 1.\n";
+            return;
+        }
+        
+        cout << "\nNúmeros generados:\n";
+        for (int i = 0; i < numeros.size(); i++) {
+            cout << numeros[i] << " ";
+            if ((i + 1) % 10 == 0) cout << "\n";
+        }
+        cout << "\n";
+    }
+    
+    void mostrarTiempos() {
+        if (tiemposEjecucion.empty()) {
+            cout << "\nNo hay resultados. Ejecute algún método de ordenamiento primero.\n";
+            return;
+        }
+        
+        cout << "\n========================================\n";
+        cout << "RESULTADOS DE TIEMPOS DE EJECUCIÓN\n";
+        cout << "========================================\n";
+        cout << fixed << setprecision(6);
+        
+        for (const auto& resultado : tiemposEjecucion) {
+            cout << left << setw(20) << resultado.first << ": " 
+                 << setw(10) << resultado.second << " segundos\n";
+        }
+        
+        // Encontrar el método más rápido
+        auto masRapido = min_element(tiemposEjecucion.begin(), tiemposEjecucion.end(),
+            [](const pair<string, double>& a, const pair<string, double>& b) {
+                return a.second < b.second;
+            });
+        
+        cout << "\nMétodo más rápido: " << masRapido->first << " (" << masRapido->second << " segundos)\n";
+        cout << "========================================\n";
+    }
+    
+    void restaurarOriginal() {
+        numeros = numerosOriginales;
+    }
+    
+    double medirTiempo(void (SistemaOrdenamiento::*metodo)(vector<int>&)) {
+        vector<int> copia = numeros;
+        auto inicio = high_resolution_clock::now();
+        (this->*metodo)(copia);
+        auto fin = high_resolution_clock::now();
+        duration<double> duracion = fin - inicio;
+        return duracion.count();
+    }
+    
+    // Métodos de ordenamiento
+    void bubbleSort(vector<int>& arr) {
+        int n = arr.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    swap(arr[j], arr[j + 1]);
+                }
+            }
+        }
+    }
+    
+    void insertionSort(vector<int>& arr) {
+        int n = arr.size();
+        for (int i = 1; i < n; i++) {
+            int key = arr[i];
+            int j = i - 1;
+            while (j >= 0 && arr[j] > key) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
+        }
+    }
+    
+    void selectionSort(vector<int>& arr) {
+        int n = arr.size();
+        for (int i = 0; i < n - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < n; j++) {
+                if (arr[j] < arr[minIdx]) {
+                    minIdx = j;
+                }
+            }
+            swap(arr[i], arr[minIdx]);
+        }
+    }
+    
+    void mergeSort(vector<int>& arr) {
+        if (arr.size() <= 1) return;
+        mergeSortHelper(arr, 0, arr.size() - 1);
+    }
+    
+    void mergeSortHelper(vector<int>& arr, int left, int right) {
+        if (left < right) {
+            int mid = left + (right - left) / 2;
+            mergeSortHelper(arr, left, mid);
+            mergeSortHelper(arr, mid + 1, right);
+            merge(arr, left, mid, right);
+        }
+    }
+    
+    void merge(vector<int>& arr, int left, int mid, int right) {
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
+        
+        vector<int> L(n1), R(n2);
+        
+        for (int i = 0; i < n1; i++)
+            L[i] = arr[left + i];
+        for (int j = 0; j < n2; j++)
+            R[j] = arr[mid + 1 + j];
+        
+        int i = 0, j = 0, k = left;
+        
+        while (i < n1 && j < n2) {
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
+            } else {
+                arr[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+        
+        while (i < n1) {
+            arr[k] = L[i];
+            i++;
+            k++;
+        }
+        
+        while (j < n2) {
+            arr[k] = R[j];
+            j++;
+            k++;
+        }
+    }
+    
+    void quickSort(vector<int>& arr) {
+        quickSortHelper(arr, 0, arr.size() - 1);
+    }
+    
+    void quickSortHelper(vector<int>& arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            quickSortHelper(arr, low, pi - 1);
+            quickSortHelper(arr, pi + 1, high);
+        }
+    }
+    
+    int partition(vector<int>& arr, int low, int high) {
+        int pivot = arr[high];
+        int i = low - 1;
+        
+        for (int j = low; j < high; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+                swap(arr[i], arr[j]);
+            }
+        }
+        swap(arr[i + 1], arr[high]);
+        return i + 1;
+    }
+    
+    void countingSort(vector<int>& arr) {
+        if (arr.empty()) return;
+        
+        int maxVal = *max_element(arr.begin(), arr.end());
+        int minVal = *min_element(arr.begin(), arr.end());
+        int range = maxVal - minVal + 1;
+        
+        vector<int> count(range, 0);
+        vector<int> output(arr.size());
+        
+        for (int i = 0; i < arr.size(); i++) {
+            count[arr[i] - minVal]++;
+        }
+        
+        for (int i = 1; i < count.size(); i++) {
+            count[i] += count[i - 1];
+        }
+        
+        for (int i = arr.size() - 1; i >= 0; i--) {
+            output[count[arr[i] - minVal] - 1] = arr[i];
+            count[arr[i] - minVal]--;
+        }
+        
+        for (int i = 0; i < arr.size(); i++) {
+            arr[i] = output[i];
+        }
+    }
+    
+    void ejecutarMetodo(int opcion) {
+        if (numeros.empty()) {
+            cout << "\nPrimero genere números con la opción 1.\n";
+            return;
+        }
+        
+        restaurarOriginal();
+        string nombreMetodo;
+        double tiempo = 0;
+        
+        switch (opcion) {
+            case 1:
+                nombreMetodo = "Bubble Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::bubbleSort);
+                break;
+            case 2:
+                nombreMetodo = "Insertion Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::insertionSort);
+                break;
+            case 3:
+                nombreMetodo = "Selection Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::selectionSort);
+                break;
+            case 4:
+                nombreMetodo = "Merge Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::mergeSort);
+                break;
+            case 5:
+                nombreMetodo = "Quick Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::quickSort);
+                break;
+            case 6:
+                nombreMetodo = "Counting Sort";
+                tiempo = medirTiempo(&SistemaOrdenamiento::countingSort);
+                break;
+            default:
+                cout << "Opción inválida.\n";
+                return;
+        }
+        
+        tiemposEjecucion.push_back({nombreMetodo, tiempo});
+        cout << "\n" << nombreMetodo << " completado en " << fixed << setprecision(6) << tiempo << " segundos.\n";
+    }
+    
+    void compararTodos() {
+        if (numeros.empty()) {
+            cout << "\nPrimero genere números con la opción 1.\n";
+            return;
+        }
+        
+        vector<pair<string, double>> resultados;
+        vector<void (SistemaOrdenamiento::*)(vector<int>&)> metodos = {
+            &SistemaOrdenamiento::bubbleSort,
+            &SistemaOrdenamiento::insertionSort,
+            &SistemaOrdenamiento::selectionSort,
+            &SistemaOrdenamiento::mergeSort,
+            &SistemaOrdenamiento::quickSort,
+            &SistemaOrdenamiento::countingSort
+        };
+        
+        vector<string> nombres = {
+            "Bubble Sort", "Insertion Sort", "Selection Sort",
+            "Merge Sort", "Quick Sort", "Counting Sort"
+        };
+        
+        cout << "\nComparando todos los métodos... Espere por favor\n\n";
+        
+        for (int i = 0; i < metodos.size(); i++) {
+            restaurarOriginal();
+            double tiempo = medirTiempo(metodos[i]);
+            resultados.push_back({nombres[i], tiempo});
+            cout << nombres[i] << ": " << fixed << setprecision(6) << tiempo << " segundos\n";
+        }
+        
+        tiemposEjecucion = resultados;
+        
+        // Encontrar el método más rápido
+        auto masRapido = min_element(resultados.begin(), resultados.end(),
+            [](const pair<string, double>& a, const pair<string, double>& b) {
+                return a.second < b.second;
+            });
+        
+        cout << "\nMétodo más rápido: " << masRapido->first << " (" << masRapido->second << " segundos)\n";
+    }
+};
+
+int main() {
+    SistemaOrdenamiento sistema;
+    int opcionPrincipal;
+    int opcionSubmenu;
+    
+    do {
+        cout << "\n========================================\n";
+        cout << "SISTEMA DE ORDENAMIENTO\n";
+        cout << "========================================\n";
+        cout << "1. Generar números aleatorios\n";
+        cout << "2. Mostrar números generados\n";
+        cout << "3. Ordenar con un método\n";
+        cout << "4. Comparar todos los métodos\n";
+        cout << "5. Mostrar resultados\n";
+        cout << "6. Salir\n";
+        cout << "========================================\n";
+        cout << "Seleccione una opción: ";
+        cin >> opcionPrincipal;
+        
+        switch (opcionPrincipal) {
+            case 1:
+                sistema.generarNumeros();
+                break;
+                
+            case 2:
+                sistema.mostrarNumeros();
+                break;
+                
+            case 3:
+                do {
+                    cout << "\n========================================\n";
+                    cout << "MÉTODOS DE ORDENAMIENTO\n";
+                    cout << "========================================\n";
+                    cout << "1. Bubble Sort\n";
+                    cout << "2. Insertion Sort\n";
+                    cout << "3. Selection Sort\n";
+                    cout << "4. Merge Sort\n";
+                    cout << "5. Quick Sort\n";
+                    cout << "6. Counting Sort\n";
+                    cout << "7. Todos los métodos\n";
+                    cout << "8. Regresar\n";
+                    cout << "========================================\n";
+                    cout << "Seleccione una opción: ";
+                    cin >> opcionSubmenu;
+                    
+                    if (opcionSubmenu >= 1 && opcionSubmenu <= 6) {
+                        sistema.ejecutarMetodo(opcionSubmenu);
+                    } else if (opcionSubmenu == 7) {
+                        sistema.compararTodos();
+                    }
+                    
+                } while (opcionSubmenu != 8);
+                break;
+                
+            case 4:
+                sistema.compararTodos();
+                break;
+                
+            case 5:
+                sistema.mostrarTiempos();
+                break;
+                
+            case 6:
+                cout << "\nSaliendo del sistema...\n";
+                break;
+                
+            default:
+                cout << "\nOpción inválida. Por favor, seleccione una opción válida.\n";
+                break;
+        }
+        
+    } while (opcionPrincipal != 6);
+    
+    return 0;
+}
