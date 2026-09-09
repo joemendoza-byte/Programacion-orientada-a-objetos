@@ -120,6 +120,9 @@ int main() {
     Fraccion f1(2, 3);
     Fraccion f2(1, 4);
     Fraccion f3(6, 8);
+cout<<"====================================";
+cout<<"========FRACCIONES CON P.O.O========";
+cout<<"====================================";
     
     cout << "Fraccion 1: ";
     f1.mostrar();
