@@ -1,0 +1,169 @@
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+class Fraccion {
+private:
+    int numerador;
+    int denominador;
+    
+    int mcd(int a, int b) {
+        a = abs(a);
+        b = abs(b);
+        while (b != 0) {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+    
+    void simplificar() {
+        int divisor = mcd(numerador, denominador);
+        numerador /= divisor;
+        denominador /= divisor;
+        if (denominador < 0) {
+            numerador = -numerador;
+            denominador = -denominador;
+        }
+    }
+    
+public:
+    Fraccion(int num = 0, int den = 1) {
+        if (den == 0) {
+            den = 1;
+        }
+        numerador = num;
+        denominador = den;
+        simplificar();
+    }
+    
+    int getNumerador() const { return numerador; }
+    int getDenominador() const { return denominador; }
+    
+    void setNumerador(int num) {
+        numerador = num;
+        simplificar();
+    }
+    
+    void setDenominador(int den) {
+        if (den == 0) {
+            return;
+        }
+        denominador = den;
+        simplificar();
+    }
+    
+    Fraccion sumar(const Fraccion& otra) const {
+        Fraccion resultado;
+        resultado.numerador = numerador * otra.denominador + otra.numerador * denominador;
+        resultado.denominador = denominador * otra.denominador;
+        resultado.simplificar();
+        return resultado;
+    }
+    
+    Fraccion restar(const Fraccion& otra) const {
+        Fraccion resultado;
+        resultado.numerador = numerador * otra.denominador - otra.numerador * denominador;
+        resultado.denominador = denominador * otra.denominador;
+        resultado.simplificar();
+        return resultado;
+    }
+    
+    Fraccion multiplicar(const Fraccion& otra) const {
+        Fraccion resultado;
+        resultado.numerador = numerador * otra.numerador;
+        resultado.denominador = denominador * otra.denominador;
+        resultado.simplificar();
+        return resultado;
+    }
+    
+    Fraccion dividir(const Fraccion& otra) const {
+        if (otra.numerador == 0) {
+            return Fraccion(0, 1);
+        }
+        Fraccion resultado;
+        resultado.numerador = numerador * otra.denominador;
+        resultado.denominador = denominador * otra.numerador;
+        resultado.simplificar();
+        return resultado;
+    }
+    
+    Fraccion operator+(const Fraccion& otra) const {
+        return sumar(otra);
+    }
+    
+    Fraccion operator-(const Fraccion& otra) const {
+        return restar(otra);
+    }
+    
+    Fraccion operator*(const Fraccion& otra) const {
+        return multiplicar(otra);
+    }
+    
+    Fraccion operator/(const Fraccion& otra) const {
+        return dividir(otra);
+    }
+    
+    void mostrar() const {
+        if (denominador == 1) {
+            cout << numerador;
+        } else if (numerador == 0) {
+            cout << "0";
+        } else {
+            cout << numerador << "/" << denominador;
+        }
+    }
+};
+
+int main() {
+    Fraccion f1(2, 3);
+    Fraccion f2(1, 4);
+    Fraccion f3(6, 8);
+    
+    cout << "Fraccion 1: ";
+    f1.mostrar();
+    cout << endl;
+    
+    cout << "Fraccion 2: ";
+    f2.mostrar();
+    cout << endl;
+    
+    cout << "Fraccion 3: ";
+    f3.mostrar();
+    cout << endl;
+    
+    Fraccion suma = f1.sumar(f2);
+    cout << "Suma: ";
+    suma.mostrar();
+    cout << endl;
+    
+    Fraccion resta = f1.restar(f2);
+    cout << "Resta: ";
+    resta.mostrar();
+    cout << endl;
+    
+    Fraccion mult = f1.multiplicar(f2);
+    cout << "Multiplicacion: ";
+    mult.mostrar();
+    cout << endl;
+    
+    Fraccion div = f1.dividir(f2);
+    cout << "Division: ";
+    div.mostrar();
+    cout << endl;
+    
+    Fraccion resultado = f1 + f2 * f3;
+    cout << "f1 + f2 * f3 = ";
+    resultado.mostrar();
+    cout << endl;
+    
+    Fraccion f4;
+    f4.setNumerador(5);
+    f4.setDenominador(10);
+    cout << "f4 modificada: ";
+    f4.mostrar();
+    cout << endl;
+    
+    return 0;
+}
