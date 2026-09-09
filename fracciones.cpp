@@ -74,6 +74,10 @@ int main() {
     int n2 = 1, d2 = 4;
     int nResultado, dResultado;
 
+cout<<"====================================";
+cout<<"=====FRACCIONES CON ESTRUCTURAS=====";
+cout<<"====================================";
+
     cout << "Fraccion 1: ";
     mostrarFraccion(n1, d1);
     cout << endl;
